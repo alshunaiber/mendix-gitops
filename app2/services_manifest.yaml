@@ -1,4 +1,4 @@
-# Rendered Chart mx-privatecloud-operator-versions-2.18.0
+# Rendered Chart mx-privatecloud-operator-versions-2.19.0
 ---
 # Source: mx-privatecloud-operator-versions/templates/mx-operator-versions.yaml
 apiVersion: privatecloud.mendix.com/v1alpha1
@@ -10,11 +10,11 @@ spec:
     repository_url: "private-cloud.registry.mendix.com"
     builder_version: "2.7.4"
     metrics_sidecar_version: "2.2.11"
-    operator_version: "2.18.0"
-    sidecar_version: "2.8.1"
+    operator_version: "2.19.0"
+    sidecar_version: "2.8.2"
     storage_provisioner_version: "2.5.1"
 
-# Rendered Chart mx-privatecloud-operator-2.18.0
+# Rendered Chart mx-privatecloud-operator-2.19.0
 ---
 # Source: mx-privatecloud-operator/templates/mx-operator-service-account.yaml
 apiVersion: v1
@@ -109,6 +109,8 @@ rules:
     resources:
       - pods/finalizers
       - deployments/finalizers
+    resourceNames:
+      - mendix-operator
   - verbs:
       - get
       - create
@@ -253,7 +255,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: mendix-operator
-          image: "private-cloud.registry.mendix.com/mendix-operator:2.18.0"
+          image: "private-cloud.registry.mendix.com/mendix-operator:2.19.0"
           command:
             - mendix-operator
           imagePullPolicy: Always
@@ -274,6 +276,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "mendix-operator"
+            - name: LOG_LEVEL
+              value: "L1"
           resources:
             requests:
               memory: "64Mi"
