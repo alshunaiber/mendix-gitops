@@ -1,4 +1,4 @@
-# Rendered Chart mx-privatecloud-operator-versions-2.5.1
+# Rendered Chart mx-privatecloud-operator-versions-2.19.0
 ---
 # Source: mx-privatecloud-operator-versions/templates/mx-operator-versions.yaml
 apiVersion: privatecloud.mendix.com/v1alpha1
@@ -8,13 +8,13 @@ metadata:
 spec:
   versions:
     repository_url: "private-cloud.registry.mendix.com"
-    builder_version: "2.3.1"
-    metrics_sidecar_version: "2.2.1"
-    operator_version: "2.5.1"
-    sidecar_version: "2.2.1"
-    storage_provisioner_version: "2.3.2"
+    builder_version: "2.7.4"
+    metrics_sidecar_version: "2.2.11"
+    operator_version: "2.19.0"
+    sidecar_version: "2.8.2"
+    storage_provisioner_version: "2.5.1"
 
-# Rendered Chart mx-privatecloud-operator-2.5.1
+# Rendered Chart mx-privatecloud-operator-2.19.0
 ---
 # Source: mx-privatecloud-operator/templates/mx-operator-service-account.yaml
 apiVersion: v1
@@ -34,86 +34,94 @@ kind: Role
 metadata:
   name: mendix-operator
 rules:
-  - apiGroups:
-      - ""
+  - verbs:
+      - get
+      - create
+      - list
+      - watch
+      - update
+      - patch
+      - delete
+    apiGroups:
+      - ''
     resources:
       - pods
       - services
-      - endpoints
-      - persistentvolumeclaims
       - events
       - configmaps
       - secrets
-    verbs:
-      - '*'
-  - apiGroups:
+  - verbs:
+      - get
+      - create
+      - list
+      - watch
+      - update
+      - patch
+      - delete
+    apiGroups:
       - apps
     resources:
       - deployments
-      - daemonsets
-      - replicasets
-      - statefulsets
-    verbs:
-      - '*'
-  - apiGroups:
-      - monitoring.coreos.com
-    resources:
-      - servicemonitors
-    verbs:
-      - get
-      - create
-  - apiGroups:
-      - "extensions"
-      - "networking.k8s.io"
-    resources:
-      - ingresses
-    verbs:
+      - pods
+  - verbs:
       - get
       - create
       - list
       - watch
       - update
-  - apiGroups:
+      - delete
+    apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+  - verbs:
+      - get
+      - create
+      - list
+      - watch
+      - update
+      - delete
+    apiGroups:
       - route.openshift.io
     resources:
       - routes
-    verbs:
+  - verbs:
+      - create
+      - update
+    apiGroups:
+      - route.openshift.io
+    resources:
+      - routes/custom-host
+  - verbs:
+      - update
+    apiGroups:
+      - apps
+    resources:
+      - deployments/finalizers
+    resourceNames:
+      - mendix-operator
+  - verbs:
+      - update
+      - patch
+    apiGroups:
+      - apps
+    resources:
+      - pods/finalizers
+      - deployments/finalizers
+    resourceNames:
+      - mendix-operator
+  - verbs:
       - get
       - create
       - list
       - watch
       - update
-  - apiGroups:
-      - route.openshift.io
-    resources:
-      - routes/custom-host
-    verbs:
-      - create
-      - update
-  - apiGroups:
-      - apps
-    resourceNames:
-      - mendix-operator
-    resources:
-      - deployments/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
-  - apiGroups:
-      - apps
-    resources:
-      - replicasets
-    verbs:
-      - get
-  - apiGroups:
+      - patch
+      - delete
+    apiGroups:
       - privatecloud.mendix.com
     resources:
-      - '*'
       - builds
       - runtimes
       - mendixapps
@@ -122,8 +130,39 @@ rules:
       - storageplans
       - storageinstances
       - operatorversions
-    verbs:
-      - '*'
+  - verbs:
+      - get
+      - update
+      - patch
+    apiGroups:
+      - privatecloud.mendix.com
+    resources:
+      - builds/status
+      - builds/finalizers
+      - runtimes/status
+      - runtimes/finalizers
+      - mendixapps/status
+      - mendixapps/finalizers
+      - endpoints/status
+      - endpoints/finalizers
+      - storageplans/status
+      - storageplans/finalizers
+      - storageinstances/status
+      - storageinstances/finalizers
+      - operatorversions/status
+      - mendixapps/finalizers
+  - verbs:
+      - get
+    apiGroups:
+      - ''
+    resources:
+      - serviceaccounts
+  - verbs:
+      - get
+    apiGroups:
+      - secrets-store.csi.x-k8s.io
+    resources:
+      - secretproviderclasses
 ---
 # Source: mx-privatecloud-operator/templates/mx-operator-storage-provisioner-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -138,9 +177,29 @@ rules:
     verbs:
       - 'create'
 ---
-# Source: mx-privatecloud-operator/templates/mx-operator-role-binding.yaml
-kind: RoleBinding
+# Source: mx-privatecloud-operator/templates/mx-operator-storage-provisioner-sa-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mendix-storage-provisioner-sa
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+---
+# Source: mx-privatecloud-operator/templates/mx-operator-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
 metadata:
   name: mendix-operator
 subjects:
@@ -152,8 +211,8 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 # Source: mx-privatecloud-operator/templates/mx-operator-storage-provisioner-role-binding.yaml
-kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
 metadata:
   name: mendix-storage-provisioner
 subjects:
@@ -162,6 +221,17 @@ subjects:
 roleRef:
   kind: Role
   name: mendix-storage-provisioner
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: mx-privatecloud-operator/templates/mx-operator-storage-provisioner-sa-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mendix-storage-provisioner-sa
+subjects:
+roleRef:
+  kind: Role
+  name: mendix-storage-provisioner-sa
   apiGroup: rbac.authorization.k8s.io
 ---
 # Source: mx-privatecloud-operator/templates/mx-operator-deployment.yaml
@@ -180,14 +250,21 @@ spec:
         name: mendix-operator
     spec:
       serviceAccountName: mendix-operator
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: mendix-operator
-          image: "private-cloud.registry.mendix.com/mendix-operator:2.5.1"
+          image: "private-cloud.registry.mendix.com/mendix-operator:2.19.0"
           command:
             - mendix-operator
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
+            privileged: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
@@ -199,6 +276,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "mendix-operator"
+            - name: LOG_LEVEL
+              value: "L1"
           resources:
             requests:
               memory: "64Mi"
@@ -213,7 +292,7 @@ kind: OperatorConfiguration
 metadata:
   name: mendix-operator-configuration
 spec:
-  buildRuntimeBaseImage: "private-cloud.registry.mendix.com/runtime-base:{{.MxRuntimeVersion}}-rhel"
+  baseOSImageTagTemplate: "ubi8-1-jre{{.JavaVersion}}-entrypoint"
   buildResources:
     limits:
       cpu: "1"
@@ -242,9 +321,17 @@ spec:
     requests:
       cpu: 100m
       memory: 512Mi
+  runtimeLivenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 3
+  runtimeReadinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 1
   runtimeMetricsConfiguration:
     interval: PT1M
     mode: native
+  runtimeTerminationGracePeriodSeconds: 300
   endpoint:
     type: ingress
 
